@@ -7,4 +7,6 @@ There are three folders:
               and power of the proposed procedure, called "error_and_power.R". The other study is focused on
               the performance of a test of one regressor in various settings of correlation in how it compares
               to other procedures, called "second_regressor.R"
-- support functions: a folder with various functions called in the other documents. 
+- support functions: a folder with various functions called in the other documents.
+
+Many of the documents created were ran on a cluster. 
