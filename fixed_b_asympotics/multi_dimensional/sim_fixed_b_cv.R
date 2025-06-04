@@ -200,24 +200,7 @@ LRV_estimator <- function(try_b, all_autocovariances,
 
 
 # Calculate the F test statistic for dimensions 1, ..., d_max
-# Under the 
-
-# b: the bandwidth, proportion of estimated autocovs that have non-zero weight
-# the_sim_data: 
-#     - Contains `big_T` simulated dependent random vectors of dimension (d_max).
-#     - Should already be centered with hypothesized or estimated means.
-# the_means: 
-#     - The estimated mean vector.  
-#     - Should be of length d.
-#     - Need this because the_sim_data is already centered. 
-# all_autocovariances: 
-#     - Rows are correspond to estimated autocov (R) at lag [0, ..., (big_T -1)]
-#     - Columns correspond to the vectorization of the estimated autocov matrix: 
-#          R11, R12, R13, ..., R1d, R21, R22, ..., R2d, ..., Rd1, ...Rdd
-# kernel: the name of the kernel function 
-# lugsail_parameters: 
-#     - a named list, list(r = 1, c= 0) that contains the lugsail parameters
-#     - default is non-lugsail  
+# Under the null_means
 
 F_stats <- function(the_means, omega_hats, d_vec, 
                     null_means = rep(0, max(d_vec))){
@@ -261,41 +244,18 @@ get_kernel_F_stats <- function(try_b, the_means, d_vec, all_autocovariances,
                               omega_mother)
   F_zero <- t(F_stats(the_means, omega_zero[[1]], d_vec))
   
-  # # Adaptive Lugsail 
-  # big_T <- nrow(all_autocovariances)
-  # init_b <-  0.75*big_T^(-2*q/(2*q+1))
-  # lug_para <- get_lugsail_parameters(big_T, q = q, method = "Adaptive", 
-  #                                    b = init_b)
-  # omega_adapt <- LRV_estimator(try_b, all_autocovariances, 
-  #                              the_kernel= the_kernel, 
-  #                              lugsail_parameters = lug_para, 
-  #                              omega_mother)
-  # F_adapt <- t(F_stats(the_means, omega_adapt[[1]], d_vec))
-  # 
-  # # Over Lugsail 
-  # lug_para <- get_lugsail_parameters(big_T, q = q, method = "Over")
-  # omega_over <- LRV_estimator(try_b, all_autocovariances, 
-  #                             the_kernel= the_kernel,
-  #                             lugsail_parameters = lug_para, 
-  #                             omega_mother)
-  # F_over <- t(F_stats(the_means, omega_over[[1]], d_vec))
+
   
   return(list(F_stats = list(mother = F_mother, zero = F_zero), 
-                             #adapt = F_adapt, over = F_over), 
-              psd_counts = data.frame(zero = omega_zero[[2]])))#, 
-                                      #adapt = omega_adapt[[2]], 
-                                      #over = omega_over[[2]])))
+              psd_counts = data.frame(zero = omega_zero[[2]])))
 }
 
 
 # Main --------------------------------------------------------------------
 
-
-
 # Generates a null data set.  Calculates the autocovariance matrices. 
 # Calculates the F-statistic for dimensions (1,..., d_max). 
 # Need to repeat this simulation many times to then find what asymptotic CV is. 
-
 
 simulate_f_stat <- function(big_T = 1000, d_vec = c(1, 5, 10)){
   d_max <- max(d_vec)
@@ -314,55 +274,26 @@ simulate_f_stat <- function(big_T = 1000, d_vec = c(1, 5, 10)){
   all_autocovariances <- t(all_autocovariances)
 
   
-  
   # ------- F-statistics for various b values (an 2-dimensional array) -------
   # [ #,  ] a different b value
   # [  , #] a different d
-  
-  # ------- BARTLETT ------- 
   F_bartlett <- get_kernel_F_stats(try_b, the_means, d_vec, all_autocovariances, 
                                    bartlett, q = 1)
   psd_bartlett <- F_bartlett[[2]]
   F_bartlett <- F_bartlett[[1]]
-  
-  # # ------- PARZEN -------
-  # F_parzen <- get_kernel_F_stats(try_b, the_means, d_vec, all_autocovariances,
-  #                                parzen, q = 2)
-  # psd_parzen <- F_parzen[[2]]
-  # F_parzen <- F_parzen[[1]]
-  # 
-  # # -------  QS -------
-  # F_qs <- get_kernel_F_stats(try_b, the_means, d_vec, all_autocovariances,
-  #                            qs, q = 2)
-  # psd_qs <- F_qs[[2]]
-  # F_qs <- F_qs[[1]]
-  
-  
+ 
   
   # ------- Store all F Stats -------
   # [ #,  ,  ] a different b value (try_b)
   # [  , #,  ] a different d value (d_vec)
   # [  ,  , #] a the_kernel 
   F_stats_all <- array(c(F_bartlett[["mother"]], F_bartlett[["zero"]]), 
-                         #F_bartlett[["adapt"]], F_bartlett[["over"]]), 
-                         # F_parzen[["mother"]], F_parzen[["zero"]], 
-                         # F_parzen[["adapt"]], F_parzen[["over"]], 
-                         # F_qs[["mother"]], F_qs[["zero"]], 
-                         # F_qs[["adapt"]], F_qs[["over"]]),
                        dim=c(length(try_b), length(d_vec), 2))
+  dimnames(F_stats_all)[[3]] <-  c("Bartlett_Mother", "Bartlett_Zero")
   
-  
-  dimnames(F_stats_all)[[3]] <-  c("Bartlett_Mother", "Bartlett_Zero")#,
-                                   # "Bartlett_Over") #  "Bartlett_Adapt",
-                                   # "Parzen_Mother", "Parzen_Zero",
-                                   #  "Parzen_Adapt", "Parzen_Over", 
-                                   #  "QS_Mother", "QS_Zero",
-                                   #  "QS_Adapt", "QS_Over")
   
   # ------- Store PSD Statistics -------
   psd_counts <- list(bartlett = psd_bartlett) 
-                     # parzen = psd_parzen, 
-                     # qs = psd_qs)
   
   return(list(F_stats_all = F_stats_all, psd_counts = psd_counts))
 }
@@ -375,7 +306,6 @@ simulate_f_stat <- function(big_T = 1000, d_vec = c(1, 5, 10)){
 try_b <-  seq(0.005, .5, by = 0.005)
 
 # How many replicates
-# KV005 used 50,0000
 num_replicates <- 50000
 
 # Sample size of each replicate
@@ -394,7 +324,7 @@ test_stats <- replicate(num_replicates,
                         simulate_f_stat(big_T = big_T, d_vec = d_vec))
 
 psd_counts <- test_stats[2,]
-#all_F_stats <- test_stats[1, ]
+
 
 #  ---- Save count info ------ 
 get_counts <- function(the_mother_kernel){
@@ -405,17 +335,12 @@ get_counts <- function(the_mother_kernel){
       counts_matrix <- counts_matrix + psd_counts[[index]][[the_mother_kernel]]
   } 
   counts_zero <- counts_matrix[,grepl("zero", lug_type)]
-  #counts_adapt <- counts_matrix[,grepl("adapt", lug_type)]
-  #counts_over <- counts_matrix[,grepl("over", lug_type)]
   psd_counts <- list(zero = counts_zero) 
-   #                  adapt = counts_adapt, 
-                    # over =counts_over) 
+
   return(psd_counts)
 }
 
 all_psd_counts <- list(bartlett = get_counts("bartlett")) 
-                       # parzen = get_counts("parzen"), 
-                       # qs = get_counts("qs"))
 
 
 # ----- Save test statistic info ------ 
@@ -436,11 +361,6 @@ all_F_stats <- array(c(all_F_stats),
 dimnames(all_F_stats)[[1]] <- try_b
 dimnames(all_F_stats)[[2]] <- d_vec
 dimnames(all_F_stats)[[3]] <-  c("Bartlett_Mother", "Bartlett_Zero")
-                                 #"Bartlett_Adapt", "Bartlett_Over") 
-                                 # "Parzen_Mother", "Parzen_Zero",
-                                 # "Parzen_Adapt", "Parzen_Over", 
-                                 # "QS_Mother", "QS_Zero",
-                                 # "QS_Adapt", "QS_Over")
 dimnames(all_F_stats)[[4]] <- paste("sim", 1:num_replicates, sep="")
 
 # -------------------------------------------------------------------------
