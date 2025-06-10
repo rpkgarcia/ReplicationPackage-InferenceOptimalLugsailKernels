@@ -435,10 +435,10 @@ simulate_f_stat <- function(big_T=1000, alpha=0.05, d=5, rho=0, mean_vec=rep(0, 
 num_replicates <-1000
 
 # Sample size of each replicate
-big_T = 500
+big_T <- 500
 
-model_type = "AR1_HOMO"
-alpha = .05
+model_type <- "AR1_HOMO"
+alpha <- .05
 
 
 
@@ -451,17 +451,6 @@ try_b <-  c(seq(0, .20, by= 0.01),
             opt_rule(rho = 0.75, big_T =big_T, alpha = 0.05, d= 3),
             opt_rule(rho = 0.75, big_T = big_T, alpha = 0.05, d= 4))
 try_b <- sort(try_b)
-
-# Generate data -----------------------------------------------------------
-
-
-# d<-2
-# rho <- 0 
-# recommended_delta_sq <- c(2.4306,3.2463,3.8148, 4.2728, 4.6658,5.0149, 5.3321,
-#                           5.6245, 5.8973, 6.1538)
-# #delta_sq <- recommended_delta_sq[d]
-# TRUE_LRV <- 1/(1 - rho^2)
-# under_alt <- sqrt(recommended_delta_sq[d]/(big_T*TRUE_LRV))  <- this was wrong!!!! 
 
 
 

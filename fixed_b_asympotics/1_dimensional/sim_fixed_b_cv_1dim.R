@@ -396,7 +396,7 @@ save_cv <- function(the_kernel){
 }
 
 #  this is how I get all the critical values 
-setwd("Fixed_b_CV_Tables_New")
+setwd("Fixed_b_CV_Tables")
 sapply(dimnames(all_F_stats)[[3]], save_cv)
 setwd("..")
 
@@ -414,7 +414,7 @@ save_distr <- function(the_kernel){
 }
 
 #  this is how I get all the critical values 
-setwd("Fixed_b_distribution_New")
+setwd("Fixed_b_distribution")
 sapply(dimnames(all_F_stats)[[3]], save_distr)
 setwd("..")
 
